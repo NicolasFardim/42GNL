@@ -6,65 +6,53 @@
 /*   By: nicolas <nicolas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 16:09:18 by nicolas           #+#    #+#             */
-/*   Updated: 2026/05/16 15:23:32 by nicolas          ###   ########.fr       */
+/*   Updated: 2026/05/24 13:17:39 by nicolas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-size_t	ft_strlen(char *str)
+char	*get_line(char *str, int fd)
 {
-	size_t	i;
+	char	buf[BUFFER_SIZE + 1];
+	char	*temp;
+	ssize_t read_bytes;
 
-	i = 0;
-	while(str[i])
-		i++;
-	return (i);
-}
-
-char	*ft_strjoin(char *str1, char *str2)
-{
-	char	*join;
-	int		i;
-
-	join = malloc((ft_strlen(str1) + ft_strlen(str2) + 1) * sizeof(char *));
-	if (!join)
-		return (NULL);
-	i = 0;
-	while(*str1)
+	read_bytes = 1;
+	while (!ft_strchr(str, '\n') && read_bytes > 0)
 	{
-		join[i] = *str1;
-		str1++;
-		i++;
+		read_bytes = read(fd, buf, BUFFER_SIZE);
+		if (read_bytes < 0)
+		{
+			return (NULL);
+		}
+		buf[BUFFER_SIZE] = '\0';
+		temp = str;
+		str = ft_strjoin(str, buf);
+		free(temp);
 	}
-	while (*str2)
-	{
-		join[i] = *str2;
-		str2++;
-		i++;
-	}
-	join[i] = '\0';
-	return (join);
+	return (str);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*text;
-	char		*str;
+	static char		*str;
+	char			*line;
+	unsigned int	i;
 
-	str = malloc(5 * sizeof(char));
 	if (!str)
-		return (NULL);
-	if (!text)
 	{
-		text = malloc(1);
-		if (!text)
+		str = malloc(1);
+		if (!str)
 			return (NULL);
-		*text = '\0';
+		*str = '\0';
 	}
-	read(fd, str, 5);
-	str[4] = '\0';
-	text = ft_strjoin(text, str);
-	free(str);
-	return (text);
+	str = get_line(str, fd);
+	i = 0;
+	while (str[i] != '\n' && str[i] != '\0')
+		i++;
+	if (str[i] == '\n')
+		i++;
+	line = ft_substr(str, 0, i);
+	return (line);
 }

@@ -1,4 +1,3 @@
 bin
 *.json
 *.txt
-main.c

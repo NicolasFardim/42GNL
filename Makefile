@@ -1,6 +1,6 @@
 
 OUT  = bin
-SRCS = main.c get_next_line.c
+SRCS = main.c get_next_line.c get_next_line_utils.c
 
 all: run
 
@@ -11,13 +11,10 @@ simple: $(SRCS)
 	gcc $^ -o $(OUT)
 
 sanitize: $(SRCS)
-	gcc -Wall -Werror -Wextra -fsanitize=address $^ -o stest
+	gcc -Wall -Werror -Wextra -fsanitize=address $^ -o $(OUT)
 
 leaks: $(OUT)
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes  ./$(OUT)
 
 clean:
 	rm -f $(OUT)
-
-fclean:
-	rm -f stest

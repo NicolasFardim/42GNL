@@ -6,7 +6,7 @@
 /*   By: nicolas <nicolas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 16:09:18 by nicolas           #+#    #+#             */
-/*   Updated: 2026/05/24 15:32:06 by nicolas          ###   ########.fr       */
+/*   Updated: 2026/05/25 12:06:11 by nicolas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ static char	*get_line(char *str, int fd)
 {
 	char	*buf;
 	char	*temp;
-	ssize_t read_bytes;
+	ssize_t	read_bytes;
 
 	buf = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!buf)
@@ -38,12 +38,36 @@ static char	*get_line(char *str, int fd)
 	return (str);
 }
 
-char	*get_next_line(int fd)
+static void	*free_static(char	**str)
 {
-	static char		*str;
+	free(*str);
+	*str = NULL;
+	return (NULL);
+}
+
+char	*create_line(char **str)
+{
 	char			*temp;
 	char			*line;
 	unsigned int	i;
+
+	i = 0;
+	while ((*str)[i] != '\n' && (*str)[i] != '\0')
+		i++;
+	if ((*str)[i] == '\n')
+		i++;
+	line = ft_substr(*str, 0, i);
+	if (!line)
+		return (free_static(str));
+	temp = *str;
+	*str = ft_substr(*str, i, ft_strlen(*str) - i);
+	free(temp);
+	return (line);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*str;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -56,25 +80,6 @@ char	*get_next_line(int fd)
 	}
 	str = get_line(str, fd);
 	if (!str || str[0] == '\0')
-	{
-		free(str);
-		str = NULL;
-		return(NULL);
-	}
-	i = 0;
-	while (str[i] != '\n' && str[i] != '\0')
-		i++;
-	if (str[i] == '\n')
-		i++;
-	line = ft_substr(str, 0, i);
-	if (!line)
-	{
-		free(str);
-		str = NULL;
-		return (NULL);
-	}
-	temp = str;
-	str = ft_substr(str, i, ft_strlen(str) - i);
-	free(temp);
-	return (line);
+		return (free_static(&str));
+	return (create_line(&str));
 }
